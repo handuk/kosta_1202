@@ -1,0 +1,5 @@
+[
+    {"modelname":"iphone11","maker":"apple","price":970000},
+    {"modelname":"s10","maker":"samsung","price":1000000},
+    {"modelname":"v20","maker":"LG","price":900000}
+]

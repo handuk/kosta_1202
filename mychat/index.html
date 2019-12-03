@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>IO chat</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- Latest compiled and minified CSS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="/socket.io/socket.io.js"></script>
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div id="userArea" class="row">
+            <div class="col-md-12">
+                <form id="userForm"> 
+                    <div class="form-group">
+                        <label>Enter User name</label>
+                        <input class="form-control" id="username">
+                        <br>
+                        <input type="submit" value="login" class="btn btn-primary"> 
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="msgArea" class="row">
+            <div class="col-md-4">
+                <h3>online user</h3>
+                <ui class="list-group" id="users"></ui>
+            </div>
+            <div class="col-md-8">
+                <div class="chat" id="chat" style="max-height: 200px;overflow-y: scroll; height: 200px;overflow: auto;"></div>
+                <form id="msgForm"> 
+                    <div class="form-group">
+                        <label>Enter msg</label>
+                        <input class="form-control" id="msg" />
+                        <br>
+                        <input type="submit" class="btn btn-primary"> 
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(function(){
+           var socket = io.connect();
+           $('#msgArea').hide();
+           $('#userForm').on('submit', (e) => {
+               e.preventDefault();
+               let userName = document.getElementById('username').value;
+               console.log(userName);
+               socket.emit('newUser', userName, (result) => {
+                    if(result){
+                        $('#userArea').hide();
+                        $('#msgArea').show();
+                    }
+                });
+           })
+           $('#msgForm').on('submit', (e) => {
+               e.preventDefault();
+               let msg = document.getElementById('msg').value;
+               socket.emit('sendMsg', msg);
+                document.getElementById('msg').value = '';
+           })
+           socket.on('receivedMsg', (data) => {
+               $('#chat').append(`<p>${data.username} : ${data.msg}</p>`);
+               if($('#chat').prop('scrollHeight') > $('#chat').height()){
+                   $('#chat').scrollTop($('#chat').prop('scrollHeight'))
+               }
+           })
+           socket.on('allUsers', (users) => {
+               console.log(users);
+               $('#users').html('');
+               users.forEach(element => {
+                    $('#users').append(`<li class="list-group-item">${element}</li>`)       
+               });
+           })
+        });
+    </script>
+</body>
+</html>
